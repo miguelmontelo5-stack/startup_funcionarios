@@ -1,5 +1,5 @@
 // ====================================================================
-// EXERCÍCIOS 1, 2 e 3: Classe, CRUD, Funções Anônimas e Expressões Lambda
+// ESTUDO DE CASO: Sistema de Gestão de Funcionários (Exercícios 1 a 4)
 // ====================================================================
 
 class Funcionario {
@@ -11,7 +11,7 @@ class Funcionario {
         this._salario = Number(salario);
     }
 
-    // Métodos de acesso (Getters e Setters)
+    // Métodos de acesso (Getters e Setters - Exercício 1)
     get id() {
         return this._id;
     }
@@ -56,7 +56,7 @@ class Funcionario {
         this.salario = salario;
     }
 
-    // Método toString() exigido no Exercício 1
+    // Método toString() (Exercício 1)
     toString() {
         return `ID: ${this._id} | Nome: ${this._nome} | Idade: ${this._idade} anos | Cargo: ${this._cargo} | Salário: R$ ${this._salario.toFixed(2)}`;
     }
@@ -67,7 +67,7 @@ let funcionarios = [];
 let proximoId = 1;
 let idEmEdicao = null;
 
-// Referências aos elementos do DOM
+// Referências aos elementos do DOM (Formulário e Tabela)
 const formFuncionario = document.getElementById('form-funcionario');
 const formTitulo = document.getElementById('form-titulo');
 const inputId = document.getElementById('funcionario-id');
@@ -79,12 +79,17 @@ const btnSalvar = document.getElementById('btn-salvar');
 const btnCancelar = document.getElementById('btn-cancelar');
 const tbodyFuncionarios = document.getElementById('tbody-funcionarios');
 
-// Formatador de moeda reescrito como Arrow Function
+// Referências aos elementos do DOM (Relatórios - Exercício 4)
+const ulSalarioAlto = document.getElementById('rel-salario-alto');
+const pMediaSalarial = document.getElementById('rel-media-salarial');
+const ulCargosUnicos = document.getElementById('rel-cargos-unicos');
+const ulNomesMaiusculo = document.getElementById('rel-nomes-maiusculo');
+
+// Formatador de moeda (Arrow Function)
 const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 // ====================================================================
-// EXERCÍCIO 3: Funções de manipulação (busca, atualização, remoção)
-// reescritas com Arrow Functions e Expressões Lambda no array
+// EXERCÍCIO 3: Funções de manipulação com Arrow Functions e Lambdas
 // ====================================================================
 
 // Busca funcionário pelo ID usando expressão lambda (.find)
@@ -94,7 +99,7 @@ const buscarFuncionarioPorId = (id) => funcionarios.find(f => f.id === id) || nu
 const buscarFuncionarioPorNome = (nome) =>
     funcionarios.find(f => f.nome.toLowerCase() === nome.trim().toLowerCase()) || null;
 
-// Atualiza um funcionário existente no array usando expressão lambda
+// Atualiza um funcionário existente usando métodos da classe
 const atualizarFuncionario = (id, nome, idade, cargo, salario) => {
     const funcionario = buscarFuncionarioPorId(id);
     if (funcionario) {
@@ -103,7 +108,7 @@ const atualizarFuncionario = (id, nome, idade, cargo, salario) => {
     }
 };
 
-// Carrega os dados do funcionário no formulário para edição (Arrow Function)
+// Carrega os dados do funcionário no formulário para edição
 const carregarFormularioEdicao = (id) => {
     const funcionario = buscarFuncionarioPorId(id);
     if (!funcionario) return;
@@ -121,7 +126,7 @@ const carregarFormularioEdicao = (id) => {
     inputNome.focus();
 };
 
-// Limpa o formulário e restaura o modo de cadastro (Arrow Function)
+// Limpa o formulário e restaura o modo de cadastro
 const resetarFormulario = () => {
     idEmEdicao = null;
     inputId.value = '';
@@ -146,7 +151,52 @@ const excluirFuncionario = (id) => {
     renderizarTabela();
 };
 
-// Renderiza a tabela percorrendo o array com expressão lambda (.forEach)
+// ====================================================================
+// EXERCÍCIO 4: Relatórios com Métodos de Array (filter, map, reduce, Set)
+// ====================================================================
+
+const atualizarRelatorios = () => {
+    // 1. Listar todos os funcionários com salário maior que R$ 5000 (filter + map)
+    const salarioMaiorQue5000 = funcionarios.filter(f => f.salario > 5000);
+    if (salarioMaiorQue5000.length === 0) {
+        ulSalarioAlto.innerHTML = '<li>Nenhum funcionário com salário &gt; R$ 5.000</li>';
+    } else {
+        ulSalarioAlto.innerHTML = salarioMaiorQue5000
+            .map(f => `<li><strong>${f.nome}</strong> (${f.cargo}) — ${formatarMoeda(f.salario)}</li>`)
+            .join('');
+    }
+
+    // 2. Mostrar a média salarial dos funcionários (reduce)
+    const mediaSalarial = funcionarios.length > 0
+        ? funcionarios.reduce((acumulador, f) => acumulador + f.salario, 0) / funcionarios.length
+        : 0;
+    pMediaSalarial.textContent = formatarMoeda(mediaSalarial);
+
+    // 3. Listar apenas os cargos únicos sem repetição (map + new Set)
+    const cargosUnicos = [...new Set(funcionarios.map(f => f.cargo))];
+    if (cargosUnicos.length === 0) {
+        ulCargosUnicos.innerHTML = '<li>Sem dados</li>';
+    } else {
+        ulCargosUnicos.innerHTML = cargosUnicos
+            .map(cargo => `<li>${cargo}</li>`)
+            .join('');
+    }
+
+    // 4. Criar uma lista de nomes em maiúsculo (map)
+    const nomesEmMaiusculo = funcionarios.map(f => f.nome.toUpperCase());
+    if (nomesEmMaiusculo.length === 0) {
+        ulNomesMaiusculo.innerHTML = '<li>Sem dados</li>';
+    } else {
+        ulNomesMaiusculo.innerHTML = nomesEmMaiusculo
+            .map(nome => `<li>${nome}</li>`)
+            .join('');
+    }
+};
+
+// ====================================================================
+// Renderização da Tabela e Eventos de Clique
+// ====================================================================
+
 const renderizarTabela = () => {
     tbodyFuncionarios.innerHTML = '';
 
@@ -156,6 +206,7 @@ const renderizarTabela = () => {
                 <td colspan="6" class="empty-row">Nenhum funcionário cadastrado.</td>
             </tr>
         `;
+        atualizarRelatorios();
         return;
     }
 
@@ -195,6 +246,8 @@ const renderizarTabela = () => {
 
         tbodyFuncionarios.appendChild(tr);
     });
+
+    atualizarRelatorios();
 };
 
 // Evento de clique no botão principal (Cadastrar / Atualizar)
@@ -231,5 +284,5 @@ btnSalvar.onclick = (event) => {
 // Depois (Arrow Function):
 btnCancelar.onclick = () => resetarFormulario();
 
-// Inicializa a tabela ao carregar a página
+// Inicializa a tabela e os relatórios ao carregar a página
 renderizarTabela();
