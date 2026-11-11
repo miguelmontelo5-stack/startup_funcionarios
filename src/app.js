@@ -1,6 +1,6 @@
-// =========================================================
-// EXERCÍCIOS 1 e 2: Classe, Cadastro, Listagem, Edição e Exclusão
-// =========================================================
+// ====================================================================
+// EXERCÍCIOS 1, 2 e 3: Classe, CRUD, Funções Anônimas e Expressões Lambda
+// ====================================================================
 
 class Funcionario {
     constructor(id, nome, idade, cargo, salario) {
@@ -79,23 +79,32 @@ const btnSalvar = document.getElementById('btn-salvar');
 const btnCancelar = document.getElementById('btn-cancelar');
 const tbodyFuncionarios = document.getElementById('tbody-funcionarios');
 
-// Formatador de moeda para exibição na tabela
-function formatarMoeda(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+// Formatador de moeda reescrito como Arrow Function
+const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// Busca funcionário pelo ID (formato tradicional para ser refatorado no Exercício 3)
-function buscarFuncionarioPorId(id) {
-    for (let i = 0; i < funcionarios.length; i++) {
-        if (funcionarios[i].id === id) {
-            return funcionarios[i];
-        }
+// ====================================================================
+// EXERCÍCIO 3: Funções de manipulação (busca, atualização, remoção)
+// reescritas com Arrow Functions e Expressões Lambda no array
+// ====================================================================
+
+// Busca funcionário pelo ID usando expressão lambda (.find)
+const buscarFuncionarioPorId = (id) => funcionarios.find(f => f.id === id) || null;
+
+// Busca funcionário pelo Nome usando expressão lambda (.find)
+const buscarFuncionarioPorNome = (nome) =>
+    funcionarios.find(f => f.nome.toLowerCase() === nome.trim().toLowerCase()) || null;
+
+// Atualiza um funcionário existente no array usando expressão lambda
+const atualizarFuncionario = (id, nome, idade, cargo, salario) => {
+    const funcionario = buscarFuncionarioPorId(id);
+    if (funcionario) {
+        funcionario.atualizarDados(nome, idade, cargo, salario);
+        console.log('Funcionário atualizado ->', funcionario.toString());
     }
-    return null;
-}
+};
 
-// Carrega os dados do funcionário no formulário para edição
-function carregarFormularioEdicao(id) {
+// Carrega os dados do funcionário no formulário para edição (Arrow Function)
+const carregarFormularioEdicao = (id) => {
     const funcionario = buscarFuncionarioPorId(id);
     if (!funcionario) return;
 
@@ -110,26 +119,24 @@ function carregarFormularioEdicao(id) {
     btnSalvar.textContent = 'Atualizar';
     btnCancelar.style.display = 'inline-block';
     inputNome.focus();
-}
+};
 
-// Limpa o formulário e restaura o modo de cadastro
-function resetarFormulario() {
+// Limpa o formulário e restaura o modo de cadastro (Arrow Function)
+const resetarFormulario = () => {
     idEmEdicao = null;
     inputId.value = '';
     formFuncionario.reset();
     formTitulo.textContent = 'Cadastrar Funcionário';
     btnSalvar.textContent = 'Cadastrar';
     btnCancelar.style.display = 'none';
-}
+};
 
-// Exclui um funcionário da lista pelo ID
-function excluirFuncionario(id) {
-    for (let i = 0; i < funcionarios.length; i++) {
-        if (funcionarios[i].id === id) {
-            console.log('Funcionário excluído ->', funcionarios[i].toString());
-            funcionarios.splice(i, 1);
-            break;
-        }
+// Remove funcionário do array usando expressão lambda (.findIndex)
+const excluirFuncionario = (id) => {
+    const indice = funcionarios.findIndex(f => f.id === id);
+    if (indice !== -1) {
+        console.log('Funcionário excluído ->', funcionarios[indice].toString());
+        funcionarios.splice(indice, 1);
     }
 
     if (idEmEdicao === id) {
@@ -137,10 +144,10 @@ function excluirFuncionario(id) {
     }
 
     renderizarTabela();
-}
+};
 
-// Renderiza a tabela de funcionários e cria os botões Editar e Excluir com onclick e funções anônimas
-function renderizarTabela() {
+// Renderiza a tabela percorrendo o array com expressão lambda (.forEach)
+const renderizarTabela = () => {
     tbodyFuncionarios.innerHTML = '';
 
     if (funcionarios.length === 0) {
@@ -152,8 +159,7 @@ function renderizarTabela() {
         return;
     }
 
-    for (let i = 0; i < funcionarios.length; i++) {
-        const func = funcionarios[i];
+    funcionarios.forEach(func => {
         const tr = document.createElement('tr');
         tr.title = func.toString();
 
@@ -165,35 +171,36 @@ function renderizarTabela() {
             <td>${formatarMoeda(func.salario)}</td>
         `;
 
-        // Coluna de ações criada via DOM para atrelar eventos onclick com funções anônimas (Exercício 2)
         const tdAcoes = document.createElement('td');
 
         const btnEditar = document.createElement('button');
         btnEditar.type = 'button';
         btnEditar.className = 'btn btn-edit';
         btnEditar.textContent = 'Editar';
-        btnEditar.onclick = function () {
-            carregarFormularioEdicao(func.id);
-        };
+        // Substituição de função anônima tradicional por Arrow Function (Exercício 3):
+        // Antes: btnEditar.onclick = function () { carregarFormularioEdicao(func.id); };
+        btnEditar.onclick = () => carregarFormularioEdicao(func.id);
 
         const btnExcluir = document.createElement('button');
         btnExcluir.type = 'button';
         btnExcluir.className = 'btn btn-delete';
         btnExcluir.textContent = 'Excluir';
-        btnExcluir.onclick = function () {
-            excluirFuncionario(func.id);
-        };
+        // Substituição de função anônima tradicional por Arrow Function (Exercício 3):
+        // Antes: btnExcluir.onclick = function () { excluirFuncionario(func.id); };
+        btnExcluir.onclick = () => excluirFuncionario(func.id);
 
         tdAcoes.appendChild(btnEditar);
         tdAcoes.appendChild(btnExcluir);
         tr.appendChild(tdAcoes);
 
         tbodyFuncionarios.appendChild(tr);
-    }
-}
+    });
+};
 
-// Evento onclick com função anônima no botão principal (Cadastrar / Atualizar)
-btnSalvar.onclick = function (event) {
+// Evento de clique no botão principal (Cadastrar / Atualizar)
+// Antes (Função anônima tradicional): btnSalvar.onclick = function (event) { ... };
+// Depois (Arrow Function):
+btnSalvar.onclick = (event) => {
     event.preventDefault();
 
     const nome = inputNome.value.trim();
@@ -207,14 +214,8 @@ btnSalvar.onclick = function (event) {
     }
 
     if (idEmEdicao !== null) {
-        // Atualiza funcionário existente usando métodos da classe Funcionario
-        const funcionarioExistente = buscarFuncionarioPorId(idEmEdicao);
-        if (funcionarioExistente) {
-            funcionarioExistente.atualizarDados(nome, idade, cargo, salario);
-            console.log('Funcionário atualizado ->', funcionarioExistente.toString());
-        }
+        atualizarFuncionario(idEmEdicao, nome, idade, cargo, salario);
     } else {
-        // Cadastra novo funcionário
         const novoFuncionario = new Funcionario(proximoId++, nome, idade, cargo, salario);
         funcionarios.push(novoFuncionario);
         console.log('Funcionário cadastrado ->', novoFuncionario.toString());
@@ -225,10 +226,10 @@ btnSalvar.onclick = function (event) {
     renderizarTabela();
 };
 
-// Evento onclick com função anônima no botão Cancelar edição
-btnCancelar.onclick = function () {
-    resetarFormulario();
-};
+// Evento de clique no botão Cancelar edição
+// Antes (Função anônima tradicional): btnCancelar.onclick = function () { resetarFormulario(); };
+// Depois (Arrow Function):
+btnCancelar.onclick = () => resetarFormulario();
 
 // Inicializa a tabela ao carregar a página
 renderizarTabela();
